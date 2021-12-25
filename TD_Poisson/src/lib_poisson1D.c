@@ -7,7 +7,7 @@
 
 void set_GB_operator_rowMajor_poisson1D(double* AB, int *lab, int *la){
 
-  printf("Row-Major-Executed\n");
+  printf("Row Major \n");
   
   for (int jj=0;jj<(*la);jj++){
 

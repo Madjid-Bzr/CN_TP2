@@ -16,7 +16,7 @@ int main(int argc,char *argv[])
   int info;
   int NRHS;
   double T0, T1;
-  double *RHS, *EX_SOL, *X;
+  double *RHS, *EX_SOL, *X, *Y;
   double *AB;
 
   double temp, relres;
@@ -31,6 +31,7 @@ int main(int argc,char *argv[])
   RHS=(double *) malloc(sizeof(double)*la);
   EX_SOL=(double *) malloc(sizeof(double)*la);
   X=(double *) malloc(sizeof(double)*la);
+  Y=(double *) malloc(sizeof(double)*la);
 
   set_grid_points_1D(X, &la);
   set_dense_RHS_DBC_1D(RHS,&la,&T0,&T1);
@@ -54,11 +55,17 @@ int main(int argc,char *argv[])
 
   int row = 1; //
 
-  if (row == 0){ // LAPACK_ROW_MAJOR
+  if (row == 1){ // LAPACK_ROW_MAJOR
     set_GB_operator_rowMajor_poisson1D(AB, &lab, &la);
     write_GB_operator_rowMajor_poisson1D(AB, &lab, &la, "AB_row.dat");
     
     info = LAPACKE_dgbsv(LAPACK_ROW_MAJOR,la, kl, ku, NRHS, AB, la, ipiv, RHS, NRHS);
+  
+    //  DGBMV
+    
+    cblas_dgbmv(CblasRowMajor, CblasNoTrans, la, la, kl, ku, 1.0, AB, lab, EX_SOL, 1, 0.0, Y, 1);
+    write_vec(Y, &la, "Y_row.dat");
+;
   
   } 
   else { // LAPACK_COL_MAJOR
@@ -66,6 +73,11 @@ int main(int argc,char *argv[])
     write_GB_operator_colMajor_poisson1D(AB, &lab, &la, "AB_col.dat");
 
     info = LAPACKE_dgbsv(LAPACK_COL_MAJOR,la, kl, ku, NRHS, AB, lab, ipiv, RHS, la);
+    
+    //  DGBMV
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, la, la, kl, ku, 1.0, AB, lab, EX_SOL, 1, 0.0, Y, 1);
+    write_vec(Y, &la, "Y_col.dat");
+    
   }    
 
   
